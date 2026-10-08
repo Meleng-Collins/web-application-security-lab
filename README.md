@@ -1,950 +1,515 @@
-\# Web Application Security Lab
+# Web Application Security Lab
 
+A controlled web application security lab built using **GNS3**, **FortiGate**, **Alpine Linux**, and **Nginx**. The lab demonstrates how a firewall can control traffic between a client network and a DMZ-hosted web server while providing a controlled environment for security testing and traffic analysis.
 
+## Project Information
 
-A controlled web application security laboratory built with \*\*GNS3, FortiGate, Alpine Linux, and Nginx\*\*. The lab is designed to demonstrate how a firewall can separate a client network from a web-server/DMZ network and provide a controlled environment for studying web traffic, firewall policies, logging, and basic security testing.
+| Item           | Details                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| Project Type   | Cybersecurity / Network Security Lab                              |
+| Environment    | GNS3                                                              |
+| Firewall       | FortiGate VM64-KVM                                                |
+| Web Server     | Alpine Linux                                                      |
+| Web Service    | Nginx                                                             |
+| Protocol       | HTTP                                                              |
+| Client Network | 10.10.80.0/24                                                     |
+| DMZ Network    | 10.10.60.0/24                                                     |
+| Status         | Functional lab topology with controlled security-testing workflow |
 
+---
 
+## 1. Project Overview
 
-> \*\*Project type:\*\* Cybersecurity / Network Security Lab
+The objective of this project is to build a small but realistic web application security environment in GNS3.
 
-> \*\*Environment:\*\* GNS3
+The lab places a web server inside a DMZ network and uses a FortiGate firewall to control communication between the client network, the DMZ, and the external network.
 
-> \*\*Firewall:\*\* FortiGate VM64-KVM
+The environment is also used to generate controlled web traffic and observe security-related events through FortiGate and Nginx logging.
 
-> \*\*Web Server:\*\* Alpine Linux + Nginx
+The project focuses on practical understanding of:
 
-> \*\*Protocol:\*\* HTTP
+* Network segmentation
+* Firewall policy configuration
+* DMZ architecture
+* Web server deployment
+* HTTP traffic
+* Security headers
+* IPS/security monitoring
+* Web-server logging
+* Controlled security testing
+* Evidence collection
+* Git-based project documentation
 
-> \*\*Status:\*\* Functional lab topology with controlled security-testing workflow
+---
 
+## 2. Lab Architecture
 
-
-\---
-
-
-
-\## 1. Project Overview
-
-
-
-Web applications are common targets for attacks because they are directly exposed to user traffic and frequently process untrusted input.
-
-
-
-This project creates a small isolated environment where web traffic passes through a \*\*FortiGate firewall\*\* before reaching a web server located in a separate network.
-
-
-
-The main objectives are to:
-
-
-
-\* Build a segmented web application environment.
-
-\* Place the web server in a DMZ/server network.
-
-\* Control traffic between the client and web server using FortiGate firewall policies.
-
-\* Configure an Alpine Linux server running Nginx.
-
-\* Generate legitimate HTTP traffic.
-
-\* Study how web requests appear in server logs.
-
-\* Perform controlled and non-destructive security tests.
-
-\* Provide a reusable environment for future web application security experiments.
-
-
-
-\---
-
-
-
-\## 2. Lab Architecture
-
-
-
-The basic architecture consists of three logical zones:
-
-
+The main GNS3 topology consists of a client network, FortiGate firewall, DMZ network, and an Alpine Linux web server.
 
 ```text
-
-&#x20;                   Internet / NAT
-
-&#x20;                        |
-
-&#x20;                        |
-
-&#x20;                   port3
-
-&#x20;               +----------------+
-
-&#x20;               |    FortiGate   |
-
-&#x20;               |    Firewall    |
-
-&#x20;               +----------------+
-
-&#x20;                 |            |
-
-&#x20;               port1        port2
-
-&#x20;                 |            |
-
-&#x20;         Client Network       DMZ
-
-&#x20;         10.10.80.0/24    10.10.60.0/24
-
-&#x20;                 |            |
-
-&#x20;                 |            |
-
-&#x20;         WEB-CLIENT       WEB SERVER
-
-&#x20;         10.10.80.10      10.10.60.10
-
-&#x20;                              |
-
-&#x20;                            Nginx
-
-&#x20;                            TCP/80
-
+                    Internet / NAT
+                         |
+                         |
+                    FortiGate
+                   VM64-KVM
+              +----------+----------+
+              |                     |
+           port1                   port2
+              |                     |
+      10.10.80.0/24          10.10.60.0/24
+         Client LAN               DMZ
+              |                     |
+        WEB-CLIENT             WEB-SERVER
+        10.10.80.10            10.10.60.10
+                                    |
+                                  Nginx
+                                   :80
 ```
 
+The topology screenshot provides visual evidence of the actual GNS3 lab configuration:
 
+![GNS3 Web Application Security Lab](screenshots/topology/security_lab.png)
 
-\### Network zones
+---
 
+## 3. IP Addressing
 
+| Device / Interface | IP Address     | Network       | Role           |
+| ------------------ | -------------- | ------------- | -------------- |
+| FortiGate port1    | 10.10.80.1/24  | 10.10.80.0/24 | Client gateway |
+| FortiGate port2    | 10.10.60.1/24  | 10.10.60.0/24 | DMZ gateway    |
+| WEB-CLIENT         | 10.10.80.10/24 | 10.10.80.0/24 | Client         |
+| WEB-SERVER         | 10.10.60.10/24 | 10.10.60.0/24 | Web server     |
 
-| Zone                 | Network         | Purpose                                          |
+The separation between `10.10.80.0/24` and `10.10.60.0/24` demonstrates the use of network segmentation between the client network and the DMZ.
 
-| -------------------- | --------------- | ------------------------------------------------ |
+---
 
-| Client network       | `10.10.80.0/24` | Source of legitimate and controlled test traffic |
+## 4. Technologies Used
 
-| DMZ / Server network | `10.10.60.0/24` | Hosts the web server                             |
+### GNS3
 
-| Internet/NAT side    | External/DHCP   | Provides controlled outbound connectivity        |
+Used to create and simulate the complete network topology.
 
+### FortiGate
 
+Used as the main security device for:
 
-\---
+* Firewall policies
+* Network segmentation
+* Traffic control
+* NAT
+* IPS/security monitoring
+* Security logging
 
+### Alpine Linux
 
+Used as the lightweight operating system for the web server.
 
-\## 3. IP Addressing
+### Nginx
 
+Used to provide the HTTP web service inside the DMZ.
 
+### Git and GitHub
 
-\### FortiGate
+Used for version control, project documentation, configuration evidence, and lab screenshots.
 
+---
 
+## 5. FortiGate Configuration
 
-| Interface | Address         | Role                      |
+The FortiGate firewall separates the client network from the web-server DMZ.
 
-| --------- | --------------- | ------------------------- |
+### 5.1 Client-to-DMZ Policy
 
-| `port1`   | `10.10.80.1/24` | Client-side gateway       |
-
-| `port2`   | `10.10.60.1/24` | DMZ/server gateway        |
-
-| `port3`   | External/DHCP   | Internet/NAT connectivity |
-
-
-
-\### Client
-
-
-
-| Device     | Address          | Gateway      |
-
-| ---------- | ---------------- | ------------ |
-
-| WEB-CLIENT | `10.10.80.10/24` | `10.10.80.1` |
-
-
-
-\### Web server
-
-
-
-| Device                  | Address          | Gateway      |
-
-| ----------------------- | ---------------- | ------------ |
-
-| Alpine/Nginx Web Server | `10.10.60.10/24` | `10.10.60.1` |
-
-
-
-\---
-
-
-
-\## 4. Technologies Used
-
-
-
-\* \*\*GNS3\*\* — Network emulation and laboratory topology.
-
-\* \*\*FortiGate VM64-KVM\*\* — Firewall, routing, NAT, and traffic control.
-
-\* \*\*Alpine Linux\*\* — Lightweight Linux operating system for the web server.
-
-\* \*\*Nginx\*\* — HTTP web server.
-
-\* \*\*VPCS / Linux client\*\* — Used to generate client traffic.
-
-\* \*\*Git/GitHub\*\* — Project version control and documentation.
-
-
-
-\---
-
-
-
-\## 5. FortiGate Configuration
-
-
-
-The FortiGate firewall provides separation between the client network and the web-server network.
-
-
-
-\### Policy 1 — WEB-CLIENT-to-DMZ
-
-
+The main client-to-server policy allows traffic from:
 
 ```text
-
-Name:        WEB-CLIENT-to-DMZ
-
-Incoming:    port1
-
-Outgoing:    port2
-
-Source:      10.10.80.0/24
-
-Destination: 10.10.60.0/24
-
-Service:     ALL
-
-NAT:         Disabled
-
-Logging:     All sessions
-
+10.10.80.0/24
 ```
 
-
-
-This policy permits traffic from the client network to the web-server/DMZ network.
-
-
-
-The main purpose is to demonstrate that communication between two different security zones should pass through an explicitly defined firewall policy.
-
-
-
-\### Policy 2 — WEB-SERVER-to-Internet
-
-
+to:
 
 ```text
-
-Name:        WEB-SERVER-to-Internet
-
-Incoming:    port2
-
-Outgoing:    port3
-
-Source:      10.10.60.0/24
-
-Destination: Internet
-
-Service:     ALL
-
-NAT:         Enabled
-
-Logging:     All sessions
-
+10.10.60.0/24
 ```
 
-
-
-This policy allows the DMZ server to make outbound connections through the FortiGate.
-
-
-
-NAT is enabled because the private DMZ address is not directly routable on the external network.
-
-
-
-\---
-
-
-
-\## 6. Web Server
-
-
-
-The web server runs \*\*Nginx on Alpine Linux\*\*.
-
-
-
-The server is located in the DMZ network:
-
-
+The policy is named:
 
 ```text
+WEB-CLIENT-to-DMZ
+```
 
-IP address: 10.10.60.10
+The policy is configured without source NAT because the DMZ server should see the original client address.
 
-Subnet:     /24
+### 5.2 Server-to-Internet Policy
 
+The web server requires controlled external connectivity for activities such as package installation and updates.
+
+The policy:
+
+```text
+WEB-SERVER-to-Internet
+```
+
+allows traffic from the DMZ interface toward the external interface with NAT enabled.
+
+### FortiGate Interface Evidence
+
+The following screenshot shows the relevant FortiGate interfaces used by the lab:
+
+![FortiGate Port 1 and Port 2](screenshots/fortigate/port1_port2.png)
+
+### Firewall and IPS Configuration Evidence
+
+The following screenshot shows the configured policy and security/IPS-related settings:
+
+![FortiGate Policy and IPS](screenshots/fortigate/policy_ips.png)
+
+---
+
+## 6. Web Server
+
+The web server runs Alpine Linux with Nginx.
+
+The server uses:
+
+```text
+IP Address: 10.10.60.10
+Subnet:     255.255.255.0
 Gateway:    10.10.60.1
-
-Web port:   TCP/80
-
+Service:    Nginx
+Port:       80
+Protocol:   HTTP
 ```
 
+Nginx was configured to serve the web application content from the Alpine Linux server.
 
+---
 
-The server hosts a simple test web page representing a bank-style web application environment.
+## 7. Connectivity Validation
 
+Basic connectivity was tested between the client, FortiGate, and web server.
 
-
-The purpose of the page is not to reproduce a real banking application, but to provide a controlled HTTP endpoint for security and network testing.
-
-
-
-\---
-
-
-
-\## 7. Connectivity Validation
-
-
-
-Before security testing, basic network connectivity was established.
-
-
-
-The following communication paths were successfully tested during the lab build:
-
-
+The following tests were successfully established during the lab:
 
 ```text
-
 WEB-CLIENT
-
-10.10.80.10
-
-&#x20;    |
-
-&#x20;    | ICMP
-
-&#x20;    v
-
+    |
+    | ICMP
+    v
 FortiGate port1
-
-10.10.80.1
-
-&#x20;    |
-
-&#x20;    | Firewall policy
-
-&#x20;    v
-
+    |
+    | Firewall policy
+    v
 FortiGate port2
-
-10.10.60.1
-
-&#x20;    |
-
-&#x20;    v
-
-Web Server
-
-10.10.60.10
-
+    |
+    | ICMP / HTTP
+    v
+WEB-SERVER
 ```
 
+HTTP connectivity to the web server was also verified.
 
+The FortiGate was able to establish a TCP connection to the web server on port 80, and the client was able to retrieve the web page from Nginx.
 
-HTTP connectivity to the Nginx server was also successfully established.
+---
 
+## 8. Lab Evidence and Screenshots
 
+This section contains screenshots captured during the construction, configuration, and testing of the lab.
 
-The server returned the expected web page over HTTP.
+### 8.1 GNS3 Topology
 
+The following screenshot shows the overall GNS3 security-lab topology and how the devices are connected.
 
+![GNS3 Security Lab Topology](screenshots/topology/security_lab.png)
 
-\---
+### 8.2 FortiGate Interfaces
 
+This screenshot provides evidence of the FortiGate interfaces used for the client and DMZ networks.
 
+![FortiGate Interfaces](screenshots/fortigate/port1_port2.png)
 
-\## 8. Web Traffic and Logging
+### 8.3 Firewall Policy and IPS
 
+This screenshot provides evidence of the firewall policy and IPS/security configuration used in the lab.
 
+![FortiGate Policy and IPS](screenshots/fortigate/policy_ips.png)
 
-Nginx records incoming HTTP requests in its access log.
+### 8.4 IPS Logs
 
+The following screenshot provides evidence of security events/log information observed during the testing process.
 
+![FortiGate IPS Logs](screenshots/fortigate/ips_logs.png)
 
-The primary log used during the laboratory work is:
+### 8.5 Web Server Logs
 
+The following screenshot shows logging evidence from the web server.
 
+![Web Server Log](screenshots/web-server/web_server_log.png)
+
+### 8.6 Security Header Test
+
+The following screenshot provides evidence from the controlled web security testing performed against the lab web application.
+
+![Security Header Test](screenshots/tests/security_header.png)
+
+---
+
+## 9. Web Traffic and Logging
+
+Web requests generated during testing were recorded by the Nginx web server.
+
+Nginx access logs provide information such as:
+
+* Client IP address
+* Request time
+* HTTP method
+* Requested URL
+* HTTP status code
+* Response size
+* User-agent information
+
+Example log location:
 
 ```text
-
 /var/log/nginx/access.log
-
 ```
 
+These logs provide useful evidence when investigating normal and suspicious HTTP requests.
 
-
-A typical legitimate request appears in the form:
-
-
+The captured web-server log is included in:
 
 ```text
-
-GET / HTTP/1.1
-
+screenshots/web-server/web_server_log.png
 ```
 
+---
 
+## 10. Security Testing Methodology
 
-The access log can therefore be used to correlate:
+The lab is designed for **controlled security testing** rather than attacking real systems.
 
+### Test 1 — Normal HTTP Request
 
-
-1\. Client activity.
-
-2\. HTTP requests.
-
-3\. Server responses.
-
-4\. Request timestamps.
-
-5\. Requested URLs.
-
-6\. Response status codes.
-
-
-
-This provides a simple foundation for studying web-server monitoring.
-
-
-
-\---
-
-
-
-\## 9. Security Testing Methodology
-
-
-
-The security-testing component of this project follows a controlled and non-destructive approach.
-
-
-
-Testing is performed only against the isolated laboratory environment.
-
-
-
-\### Test categories
-
-
-
-\#### Test 1 — Normal HTTP Traffic
-
-
-
-The first test establishes a baseline using an ordinary HTTP request.
-
-
+A normal request is sent from the client toward the web server.
 
 Example:
 
-
-
 ```text
-
 GET /
-
 ```
 
+The expected result is a successful HTTP response from Nginx.
 
+The request should also appear in the Nginx access log.
 
-Expected behavior:
+### Test 2 — Controlled Suspicious HTTP Input
 
+A harmless suspicious-looking HTTP request can be generated to observe how the web server and security controls handle unusual input.
 
-
-```text
-
-Client → FortiGate → Web Server
-
-&#x20;                   ↓
-
-&#x20;                HTTP 200
-
-```
-
-
-
-The purpose is to establish what normal application traffic looks like before introducing unusual requests.
-
-
-
-\#### Test 2 — Controlled Suspicious HTTP Input
-
-
-
-The second test introduces a harmless suspicious-looking parameter into an HTTP request.
-
-
-
-Example test pattern:
-
-
+Example:
 
 ```text
-
 GET /?id=' OR '1'='1
-
 ```
 
+The purpose is **observation and detection**, not exploitation.
 
+The resulting request can be examined in:
 
-The objective is to observe how unusual input appears in the web-server logs and to provide a basis for discussing web-application security monitoring.
+* Nginx access logs
+* FortiGate security logs
+* IPS/security monitoring
 
+No real external target is involved.
 
+---
 
-This test is intended for \*\*observation and detection\*\*, not exploitation.
+## 11. Security Principles Demonstrated
 
+The lab demonstrates several practical cybersecurity concepts.
 
+### Network Segmentation
 
-\---
-
-
-
-\## 10. Security Principles Demonstrated
-
-
-
-This laboratory demonstrates several important cybersecurity concepts.
-
-
-
-\### Network segmentation
-
-
-
-The client and web server are placed in different IP networks.
-
-
+The client and web server are placed on different networks:
 
 ```text
-
-Client network: 10.10.80.0/24
-
-DMZ:            10.10.60.0/24
-
+10.10.80.0/24
+10.10.60.0/24
 ```
 
+This prevents direct Layer-2 communication and forces traffic through the FortiGate firewall.
 
+### Firewall Policy Enforcement
 
-This prevents the web server from simply being placed on the same network as the client.
+Traffic between the client and DMZ is controlled by an explicit FortiGate policy.
 
+### DMZ Architecture
 
+The web server is separated from the client network and placed in a dedicated DMZ.
 
-\### Firewall enforcement
+### Least-Privilege Access
 
+Only the traffic required for the lab is allowed through the firewall policies.
 
+### Security Monitoring
 
-Traffic between the two networks is controlled by the FortiGate firewall rather than being allowed through an unrestricted Layer-2 connection.
+FortiGate security events and Nginx logs provide visibility into traffic and security-related activity.
 
+### Controlled Testing
 
+Security tests are performed only against the intentionally created lab environment.
 
-\### DMZ concept
+---
 
-
-
-The web server is placed in a dedicated server/DMZ network.
-
-
-
-This reflects the principle that externally accessed services should be isolated from more trusted internal networks.
-
-
-
-\### Least privilege
-
-
-
-The lab can be extended from the current broad testing policy to specific services such as:
-
-
+## 12. Repository Structure
 
 ```text
-
-HTTP  → TCP/80
-
-HTTPS → TCP/443
-
-DNS   → UDP/TCP 53
-
-```
-
-
-
-A production design should avoid using `ALL` services where they are not required.
-
-
-
-\### Logging and monitoring
-
-
-
-Nginx access logs provide visibility into HTTP requests, while FortiGate logging provides visibility into network traffic passing through the firewall.
-
-
-
-\---
-
-
-
-\## 11. Repository Structure
-
-
-
-The Git repository is organized to separate the topology, documentation, security testing, and supporting material.
-
-
-
-```text
-
 web-application-security-lab/
-
 │
-
-├── Web\_App\_Security\_Lab.gns3
-
+├── Web_App_Security_Lab.gns3
+├── README.md
 ├── .gitignore
-
 │
-
+├── screenshots/
+│   ├── topology/
+│   │   └── security_lab.png
+│   │
+│   ├── fortigate/
+│   │   ├── ips_logs.png
+│   │   ├── policy_ips.png
+│   │   └── port1_port2.png
+│   │
+│   ├── web-server/
+│   │   └── web_server_log.png
+│   │
+│   └── tests/
+│       └── security_header.png
+│
 ├── documentation/
-
-│   ├── lab-overview.md
-
-│   ├── network-design.md
-
-│   └── security-testing.md
-
-│
-
 ├── fortigate/
-
-│   ├── firewall-policies.md
-
-│   └── configuration-notes.md
-
-│
-
 ├── nginx/
-
-│   ├── server-notes.md
-
-│   └── log-analysis.md
-
-│
-
-├── tests/
-
-│   ├── baseline-test.md
-
-│   └── test-results.md
-
-│
-
-└── screenshots/
-
+└── tests/
 ```
 
+The `project-files/` directory contains GNS3 runtime files and is excluded from Git using `.gitignore`.
 
+---
 
-The current repository contains the GNS3 topology and Git configuration. Additional documentation and evidence can be added as the project develops.
+## 13. Why GNS3?
+
+GNS3 provides a useful environment for building and testing network-security scenarios without requiring physical networking equipment.
+
+For this project, GNS3 makes it possible to combine:
+
+* FortiGate
+* Alpine Linux
+* Nginx
+* Virtual client systems
+* NAT/Internet connectivity
 
+This provides a practical environment for experimenting with network segmentation, firewall policies, web traffic, and security monitoring.
 
+---
 
-\---
+## 14. Future Improvements
 
+Possible future improvements include:
 
+* HTTPS/TLS configuration
+* Web application authentication
+* Additional security headers
+* Web Application Firewall functionality
+* More detailed FortiGate IPS testing
+* HTTP/HTTPS traffic comparison
+* Centralized logging
+* SIEM integration
+* Additional controlled security tests
+* Automated security testing
+* Database-backed web application
+* More detailed incident-analysis scenarios
 
-\## 12. Why GNS3?
+---
 
+## 15. Security and Ethical Use
 
+This project is intended strictly for educational and authorized security testing.
 
-GNS3 provides an isolated environment for experimenting with network-security configurations without affecting a production network.
+All security tests should be performed only against systems owned by the tester or systems for which explicit authorization has been provided.
 
+The lab provides an isolated environment for learning about:
 
+* Web application security
+* Firewall configuration
+* Network segmentation
+* Intrusion prevention
+* Security monitoring
+* Log analysis
 
-It makes it possible to reproduce scenarios involving:
+---
 
+## 16. Current Project Status
 
+### Completed
 
-\* Firewalls
+* GNS3 topology created
+* FortiGate deployed
+* Client network configured
+* DMZ/server network configured
+* Alpine Linux web server deployed
+* Nginx installed and configured
+* HTTP connectivity established
+* FortiGate client-to-DMZ policy configured
+* FortiGate server-to-Internet policy configured
+* Basic web traffic generated
+* Security-related testing performed in the controlled environment
+* Screenshots and security evidence collected
+* Git repository initialized
+* Initial project files committed
+* Project documentation created
+* Lab screenshots added to the repository
+* Project pushed to GitHub
 
-\* Routers
+### In Progress
 
-\* Linux servers
+* Formalize detailed security-test results
+* Add additional screenshots where necessary
+* Document detailed FortiGate configuration
+* Analyze Nginx logs
+* Perform additional controlled security tests
+* Add final conclusions and observations
 
-\* Network segmentation
+---
 
-\* NAT
+## 17. Project Learning Outcomes
 
-\* Web servers
+Through this project, practical experience was gained in:
 
-\* Traffic inspection
-
-\* Security testing
-
-
-
-This makes the environment suitable for cybersecurity training and internship projects.
-
-
-
-\---
-
-
-
-\## 13. Future Improvements
-
-
-
-The current lab provides a foundation that can be expanded without changing its basic architecture.
-
-
-
-Possible improvements include:
-
-
-
-\### HTTPS
-
-
-
-Configure Nginx with TLS and compare:
-
-
-
-```text
-
-HTTP  → TCP/80
-
-HTTPS → TCP/443
-
-```
-
-
-
-\### More restrictive firewall policies
-
-
-
-Replace the current broad testing rules with service-specific policies.
-
-
-
-\### FortiGate inspection
-
-
-
-Enable appropriate security profiles and examine how the firewall handles suspicious web traffic.
-
-
-
-\### Web application logging
-
-
-
-Expand the application to produce more realistic authentication and application events.
-
-
-
-\### Security monitoring
-
-
-
-Add centralized logging or a SIEM platform to correlate:
-
-
-
-```text
-
-FortiGate logs
-
-&#x20;     +
-
-Nginx access logs
-
-&#x20;     +
-
-Nginx error logs
-
-&#x20;     +
-
-Application events
-
-```
-
-
-
-\### Additional security tests
-
-
-
-The isolated environment can later be used to study:
-
-
-
-\* Input validation
-
-\* Authentication security
-
-\* HTTP header security
-
-\* Access-control weaknesses
-
-\* Suspicious request detection
-
-\* Basic vulnerability scanning
-
-\* Web-server hardening
-
-
-
-All testing should remain restricted to the authorized laboratory environment.
-
-
-
-\---
-
-
-
-\## 14. Security and Ethical Use
-
-
-
-This project is intended strictly for \*\*authorized laboratory and educational use\*\*.
-
-
-
-The security tests are designed to run against systems controlled by the lab owner or with explicit permission.
-
-
-
-The techniques demonstrated in this repository should not be used against systems, networks, or applications without authorization.
-
-
-
-\---
-
-
-
-\## 15. Current Project Status
-
-
-
-\### Completed
-
-
-
-\* \[x] GNS3 laboratory topology created
-
-\* \[x] FortiGate firewall deployed
-
-\* \[x] Client network configured
-
-\* \[x] DMZ/server network configured
-
-\* \[x] Alpine Linux web server deployed
-
-\* \[x] Nginx installed and configured
-
-\* \[x] HTTP connectivity established
-
-\* \[x] FortiGate client-to-DMZ policy configured
-
-\* \[x] FortiGate server-to-Internet policy configured
-
-\* \[x] Basic web traffic successfully generated
-
-
-
-
-
-\---
-
-
-
-\## 16. Project Learning Outcomes
-
-
-
-This laboratory provides practical experience with:
-
-
-
-\* Network segmentation
-
-\* Firewall policy design
-
-\* FortiGate administration
-
-\* DMZ architecture
-
-\* Linux server administration
-
-\* Nginx configuration
-
-\* HTTP traffic
-
-\* Network troubleshooting
-
-\* Security logging
-
-\* Controlled security testing
-
-
-
-The project also demonstrates how network security and web application security can be combined in a single isolated laboratory environment.
-
-
-
-\---
-
-
-
-\## 17. Author
-
-
-
-\*\*Meleng Collins\*\*
-
-
+* Building a virtual cybersecurity lab
+* Configuring FortiGate interfaces
+* Designing firewall policies
+* Implementing network segmentation
+* Creating a DMZ environment
+* Deploying an Alpine Linux web server
+* Configuring Nginx
+* Generating and analyzing HTTP traffic
+* Reading web-server logs
+* Observing security events
+* Performing controlled security testing
+* Collecting technical evidence
+* Using Git for version control
+* Documenting a cybersecurity project
+
+---
+
+## 18. Author
+
+**Meleng Collins**
 
 Cybersecurity / IT Internship Project
 
+**Project:** Web Application Security Lab
 
-
-The project was developed as a practical cybersecurity laboratory for learning and demonstrating firewall configuration, network segmentation, web-server deployment, traffic monitoring, and controlled web application security testing.
-
-
-
+**Environment:** GNS3 + FortiGate + Alpine Linux + Nginx
